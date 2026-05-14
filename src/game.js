@@ -7,11 +7,10 @@ const Game = {
     selectedCar: null,
     currentScene: null,
     scenes: {},
-    ysdk: null,
     isReady: false,
     lastTime: 0,
 
-    async start() {
+    start() {
         console.log('Auto Flip - Запуск...');
 
         // Инициализация рендера и ввода
@@ -30,28 +29,8 @@ const Game = {
             coop_lobby: CoopLobbyScene
         };
 
-        // Инициализация Yandex Games SDK (с таймаутом)
-        try {
-            if (typeof YaGames !== 'undefined') {
-                // Таймаут 3 сек — если SDK не отвечает, продолжаем без него
-                this.ysdk = await Promise.race([
-                    YaGames.init(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('SDK timeout')), 3000))
-                ]);
-                console.log('Yandex SDK initialized');
-
-                // Инициализация подсистем
-                await Storage.init(this.ysdk);
-                Ads.init(this.ysdk);
-            } else {
-                console.warn('YaGames not found, running in local mode');
-            }
-        } catch (e) {
-            console.warn('Yandex SDK not available (local dev mode):', e.message);
-        }
-
         // Загрузка сохранения
-        const savedData = await Storage.loadGame();
+        const savedData = Storage.loadGame();
         if (savedData) {
             this.player = savedData;
             console.log('Game loaded:', this.player.name);
@@ -64,11 +43,6 @@ const Game = {
         // Стартуем меню
         this.setScene('menu');
 
-        // Сообщаем SDK что игра готова
-        if (this.ysdk) {
-            this.ysdk.features.LoadingAPI.ready();
-        }
-
         this.isReady = true;
 
         // Запуск game loop
@@ -77,7 +51,7 @@ const Game = {
     },
 
     loop(timestamp) {
-        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.1); // Макс 100ms
+        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.1);
         this.lastTime = timestamp;
 
         // Обновление
@@ -119,7 +93,6 @@ const Game = {
         if (!this.player) {
             this.player = Economy.createPlayer('Игрок');
         }
-        // Отправляем своё состояние сопернику
         Multiplayer.sendPlayerUpdate(this.player);
         this.setScene('garage');
     },
