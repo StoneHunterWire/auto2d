@@ -30,14 +30,22 @@ const Game = {
             coop_lobby: CoopLobbyScene
         };
 
-        // Инициализация Yandex Games SDK
+        // Инициализация Yandex Games SDK (с таймаутом)
         try {
-            this.ysdk = await YaGames.init();
-            console.log('Yandex SDK initialized');
+            if (typeof YaGames !== 'undefined') {
+                // Таймаут 3 сек — если SDK не отвечает, продолжаем без него
+                this.ysdk = await Promise.race([
+                    YaGames.init(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('SDK timeout')), 3000))
+                ]);
+                console.log('Yandex SDK initialized');
 
-            // Инициализация подсистем
-            await Storage.init(this.ysdk);
-            Ads.init(this.ysdk);
+                // Инициализация подсистем
+                await Storage.init(this.ysdk);
+                Ads.init(this.ysdk);
+            } else {
+                console.warn('YaGames not found, running in local mode');
+            }
         } catch (e) {
             console.warn('Yandex SDK not available (local dev mode):', e.message);
         }

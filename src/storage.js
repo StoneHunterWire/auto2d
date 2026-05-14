@@ -8,6 +8,7 @@ const Storage = {
 
     async init(ysdk) {
         this._ysdk = ysdk;
+        if (!ysdk) return;
         try {
             this._player = await ysdk.getPlayer();
         } catch (e) {

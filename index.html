@@ -53,8 +53,8 @@
     </div>
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Yandex Games SDK -->
-    <script src="https://yandex.ru/games/sdk/v2"></script>
+    <!-- Yandex Games SDK (async — не блокирует загрузку если недоступен) -->
+    <script src="https://yandex.ru/games/sdk/v2" async onerror="console.warn('Yandex SDK script failed to load')"></script>
 
     <!-- Game Modules -->
     <script src="src/utils.js"></script>
